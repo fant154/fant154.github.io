@@ -3,88 +3,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>TV Photo Viewer</title>
+  <meta charset="UTF-8">
+  <title>SNAPS Photo Viewer</title>
   <style>
     body {
-      background: white;
-      font-family: sans-serif;
-      color: black;
-      padding: 20px;
-      text-align: center;
-    }
-    .grid {
+      margin: 0;
+      background-color: #000;
+      color: white;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 20px;
+      align-items: center;
+      height: 100vh;
+      overflow-y: auto;
     }
     img {
-      width: 100px;
-      height: 100px;
+      max-width: 45vw;
+      max-height: 45vh;
+      margin: 10px;
+      border-radius: 8px;
       object-fit: cover;
-      margin: 5px;
-      border-radius: 10px;
-      background: #eee;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
-  <h1>Room: <span id="room-name">SNOQXD</span></h1>
-  <p id="status">Loading photos...</p>
-  <div class="grid" id="photo-grid"></div>
-
-  <!-- Supabase UMD client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.2/dist/umd/supabase.min.js"></script>
   <script>
     const SUPABASE_URL = 'https://qvxfxikfssskvknsifxb.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2eGZ4aWtmc3Nza3ZrbnNpZnhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNTQwNjQsImV4cCI6MjA2NTgzMDA2NH0.k6aBuy9HGgkrIdxt5QuWcVAzUpY-y1cgN-FmlNw05VM';
-
     const ROOM = 'SNOQXD';
 
-    const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const photoGrid = document.getElementById('photo-grid');
-    const statusText = document.getElementById('status');
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function fetchPhotos() {
-      photoGrid.innerHTML = '';
-      statusText.textContent = 'Loading...';
+    async function fetchAndDisplayPhotos() {
+      const { data, error } = await supabase
+        .storage
+        .from('photos')
+        .list(ROOM, { limit: 100, offset: 0 });
 
-      try {
-        const { data, error } = await supabaseClient
-          .storage
-          .from('photos')
-          .list(ROOM, { limit: 100 });
-
-        if (error) {
-          statusText.textContent = 'Error loading photos';
-          console.error(error);
-          return;
-        }
-
-        if (!data || data.length === 0) {
-          statusText.textContent = 'No photos found';
-          return;
-        }
-
-        statusText.textContent = `Loaded ${data.length} photo(s)`;
-
-        data.forEach((file) => {
-          const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/photos/${ROOM}/${file.name}`;
-          const img = document.createElement('img');
-          img.src = publicUrl;
-          img.alt = file.name;
-          photoGrid.appendChild(img);
-        });
-      } catch (e) {
-        statusText.textContent = 'Unexpected error fetching photos';
-        console.error(e);
+      if (error) {
+        console.error('Error listing photos:', error.message);
+        return;
       }
+
+      data.forEach(file => {
+        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/photos/${ROOM}/${file.name}`;
+        const img = document.createElement("img");
+        img.src = publicUrl;
+        document.body.appendChild(img);
+      });
     }
 
-    fetchPhotos();
-    setInterval(fetchPhotos, 10000);
+    fetchAndDisplayPhotos();
   </script>
 </body>
 </html>
+
 
