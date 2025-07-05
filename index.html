@@ -8,8 +8,8 @@
   <style>
     body {
       margin: 0;
-      background-color: #000;
-      color: white;
+      background-color: #ffffff;
+      color: rgb(0, 0, 0);
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
@@ -34,26 +34,39 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2eGZ4aWtmc3Nza3ZrbnNpZnhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNTQwNjQsImV4cCI6MjA2NTgzMDA2NH0.k6aBuy9HGgkrIdxt5QuWcVAzUpY-y1cgN-FmlNw05VM';
     const ROOM = 'SNOQXD';
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function fetchAndDisplayPhotos() {
-      const { data, error } = await supabase
-        .storage
-        .from('photos')
-        .list(ROOM, { limit: 100, offset: 0 });
+async function fetchAndDisplayPhotos() {
+  console.log("Fetching photos from room:", ROOM);
+  
+  const { data, error } = await supabase
+    .storage
+    .from('photos')
+    .list(ROOM, { limit: 100, offset: 0 });
 
-      if (error) {
-        console.error('Error listing photos:', error.message);
-        return;
-      }
+  if (error) {
+    console.error('Error listing photos:', error.message);
+    return;
+  }
 
-      data.forEach(file => {
-        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/photos/${ROOM}/${file.name}`;
-        const img = document.createElement("img");
-        img.src = publicUrl;
-        document.body.appendChild(img);
-      });
-    }
+  if (!data || data.length === 0) {
+    console.warn("No photos found in room:", ROOM);
+  } else {
+    console.log("Found files:", data.map(f => f.name));
+  }
+
+  data.forEach(file => {
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/photos/${ROOM}/${file.name}`;
+    console.log("Loading image:", publicUrl);
+    
+    const img = document.createElement("img");
+    img.src = publicUrl;
+    img.onload = () => console.log("Loaded:", img.src);
+    img.onerror = () => console.error("Failed to load:", img.src);
+    document.body.appendChild(img);
+  });
+}
+
 
     fetchAndDisplayPhotos();
   </script>
