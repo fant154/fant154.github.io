@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TV Photo Viewer</title>
+  <style>
+    body {
+      background: white;
+      font-family: sans-serif;
+      color: black;
+      padding: 20px;
+      text-align: center;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin: 5px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Room: <span id="room-name">ROOM_CODE_HERE</span></h1>
+  <p id="status">Loading photos...</p>
+  <div class="grid" id="photo-grid"></div>
+
+  <script type="module">
+    const SUPABASE_URL = 'https://qvxfxikfssskvknsifxb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2eGZ4aWtmc3Nza3ZrbnNpZnhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNTQwNjQsImV4cCI6MjA2NTgzMDA2NH0.k6aBuy9HGgkrIdxt5QuWcVAzUpY-y1cgN-FmlNw05VM';
+    const ROOM = 'SNOQXD'.trim();
+
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js');
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const photoGrid = document.getElementById('photo-grid');
+    const statusText = document.getElementById('status');
+
+    async function fetchPhotos() {
+      photoGrid.innerHTML = '';
+      statusText.textContent = 'Loading...';
+
+      const { data, error } = await supabase
+        .storage
+        .from('photos')
+        .list(ROOM, { limit: 100 });
+
+      if (error) {
+        statusText.textContent = 'Error loading photos';
+        console.error(error);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        statusText.textContent = 'No photos found';
+        return;
+      }
+
+      statusText.textContent = `Loaded ${data.length} photo(s)`;
+
+      data.forEach((file) => {
+        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/photos/${ROOM}/${file.name}`;
+        const img = document.createElement('img');
+        img.src = publicUrl;
+        img.alt = file.name;
+        photoGrid.appendChild(img);
+      });
+    }
+
+    fetchPhotos();
+    setInterval(fetchPhotos, 10000);
+  </script>
+</body>
+</html>
