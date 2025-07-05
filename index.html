@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,21 +28,18 @@
   </style>
 </head>
 <body>
-  <h1>Room_: <span id="room-name">ROOM_CODE_HERE</span></h1>
+  <h1>Room: <span id="room-name">SNOQXD</span></h1>
   <p id="status">Loading photos...</p>
   <div class="grid" id="photo-grid"></div>
 
   <!-- Supabase UMD client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.2/dist/umd/supabase.min.js"></script>
   <script>
-    const SUPABASE_URL = 'https://qvxfxikfssskvknsifxb.supabase.co'; // ← Replace this
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2eGZ4aWtmc3Nza3ZrbnNpZnhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNTQwNjQsImV4cCI6MjA2NTgzMDA2NH0.k6aBuy9HGgkrIdxt5QuWcVAzUpY-y1cgN-FmlNw05VM'; // ← Replace this
-    const ROOM = 'SNOQXD'.trim(); // ← Replace this
+    const SUPABASE_URL = 'https://qvxfxikfssskvknsifxb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2eGZ4aWtmc3Nza3ZrbnNpZnhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNTQwNjQsImV4cCI6MjA2NTgzMDA2NH0.k6aBuy9HGgkrIdxt5QuWcVAzUpY-y1cgN-FmlNw05VM';
+    const ROOM = 'SNOQXD';
 
-    document.getElementById('room-name').textContent = ROOM;
-
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const photoGrid = document.getElementById('photo-grid');
     const statusText = document.getElementById('status');
 
@@ -54,7 +48,7 @@
       statusText.textContent = 'Loading...';
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .storage
           .from('photos')
           .list(ROOM, { limit: 100 });
@@ -85,10 +79,8 @@
       }
     }
 
-    // Initial load and auto-refresh every 10 seconds
     fetchPhotos();
     setInterval(fetchPhotos, 10000);
   </script>
 </body>
 </html>
-é
