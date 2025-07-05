@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Photo Viewer</title>
   <style>
     body {
@@ -9,19 +9,57 @@
       margin: 0;
       padding: 20px;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
     }
     img {
-      max-width: 90vw;
-      max-height: 90vh;
+      max-width: 300px;
+      max-height: 300px;
+      margin: 10px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      object-fit: cover;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
-  <img src="https://qvxfxikfssskvknsifxb.supabase.co/storage/v1/object/public/photos/28O6SO/Screenshot%202025-06-28%20at%2018.40.54%20Small.jpeg" alt="SNAPS Photo">
+  <script>
+    const SUPABASE_URL = 'https://qvxfxikfssskvknsifxb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2eGZ4aWtmc3Nza3ZrbnNpZnhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNTQwNjQsImV4cCI6MjA2NTgzMDA2NH0.k6aBuy9HGgkrIdxt5QuWcVAzUpY-y1cgN-FmlNw05VM';
+    const ROOM = '28O6SO';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function fetchAndDisplayAllPhotos() {
+      const { data: files, error } = await supabase
+        .storage
+        .from('photos')
+        .list(ROOM, { limit: 100, offset: 0 });
+
+      if (error) {
+        console.error('Erreur lors du listing des fichiers:', error.message);
+        return;
+      }
+
+      if (!files || files.length === 0) {
+        console.warn("Aucune image trouvée dans le dossier:", ROOM);
+        return;
+      }
+
+      files.forEach(file => {
+        const { data } = supabase.storage.from('photos').getPublicUrl(`${ROOM}/${file.name}`);
+        const img = document.createElement("img");
+        img.src = data.publicUrl;
+        img.alt = file.name;
+        document.body.appendChild(img);
+      });
+    }
+
+    fetchAndDisplayAllPhotos();
+  </script>
 </body>
 </html>
+
